@@ -8,6 +8,7 @@ SRC =                   	\
 	nauty/nautil.c		\
 	nauty/naugraph.c	\
 	NautyGraph.cpp		\
+	AutoGraph.cpp		\
 	Isomorphism.cpp		\
 	main.cpp
 
