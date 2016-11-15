@@ -69,8 +69,6 @@ void AutoGraph::toggle(int a, int b)
     remEdge(a, b);
   else
     addEdge(a, b);
-
-  printf("%d %d %d\n", permutation[0], permutation[1], permutation[2]);
 }
 
 bool AutoGraph::isConnected(int a, int b)
@@ -91,8 +89,14 @@ void AutoGraph::addEdge(int a, int b)
 
   swap(permutation[find(a)],
        permutation[find(cur->nei[indexPair(a, b, n_nodes)].p1)]);
-  swap(permutation[find(b)],
-       permutation[find(cur->nei[indexPair(a, b, n_nodes)].p2)]);
+
+  if (b == cur->nei[indexPair(a, b, n_nodes)].p1)
+    swap(permutation[find(a)],
+         permutation[find(cur->nei[indexPair(a, b, n_nodes)].p2)]);
+  else
+    swap(permutation[find(b)],
+         permutation[find(cur->nei[indexPair(a, b, n_nodes)].p2)]);
+
   cur = cur->nei[indexPair(a, b, n_nodes)].dest;
 }
 
@@ -104,8 +108,14 @@ void AutoGraph::remEdge(int a, int b)
 
   swap(permutation[find(a)],
        permutation[find(cur->nei[indexPair(a, b, n_nodes)].p1)]);
-  swap(permutation[find(b)],
-       permutation[find(cur->nei[indexPair(a, b, n_nodes)].p2)]);
+
+  if (b == cur->nei[indexPair(a, b, n_nodes)].p1)
+    swap(permutation[find(a)],
+         permutation[find(cur->nei[indexPair(a, b, n_nodes)].p2)]);
+  else
+    swap(permutation[find(b)],
+         permutation[find(cur->nei[indexPair(a, b, n_nodes)].p2)]);
+
   cur = cur->nei[indexPair(a, b, n_nodes)].dest;
 }
 
