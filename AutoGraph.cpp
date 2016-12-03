@@ -121,29 +121,29 @@ void AutoGraph::createNeighbor(ANode* cur, int a, int b)
   {
     AutoGraph::ANode *n = graphMap[s];
 
-    int f1 = a, f2 = b;
+    pair<int, int> f = cur->edgeType[s];
 
-    for (int i = 0; i < n_nodes; i++)
+/*    for (int i = 0; i < n_nodes; i++)
       for (int j = i + 1; j < n_nodes; j++)
       {
         int ii = permutation[i], jj = permutation[j];
         if (ii > jj)
           swap(ii, jj);
 
-        if (adjM[ii][jj] != n->adjM[i][j])
+        if (adjM[i][j] != n->adjM[ii][jj])
         {
           if (ii != a || jj != b)
           {
             f1 = ii, f2 = jj;
-            break;
+//            break;
           }
           printf("dif %d %d\n", ii, jj);
         }
-      }
+      }*/
 
-    cur->nei[indexPair(a, b, n_nodes)] = {n, f1, f2};
+    cur->nei[indexPair(a, b, n_nodes)] = {n, f.first, f.second};
 
-    printf("Created another edge from %s to %s (%d, %d) - (%d, %d)\n", cur->label.c_str(), s.c_str(), f1, f2, a, b);
+    printf("Created another edge from %s to %s (%d, %d) - (%d, %d)\n", cur->label.c_str(), s.c_str(), f.first, f.second, a, b);
   }
   else
   {
@@ -155,14 +155,21 @@ void AutoGraph::createNeighbor(ANode* cur, int a, int b)
     n->label = s;
 
     for (int i = 0; i < n_nodes; i++)
-    {
       n->adjM[i] = new bool[n_nodes];
+    for (int i = 0; i < n_nodes; i++)
       for (int j = 0; j < n_nodes; j++)
-        n->adjM[i][j] = adjM[permutation[i]][permutation[j]];
-    }
+        n->adjM[permutation[i]][permutation[j]] = adjM[i][j];
+
+    printf("C2: ");
+    for (int i = 0; i < n_nodes; i++)
+      for (int j = 0; j < n_nodes; j++)
+        printf("%d", n->adjM[i][j]);
+    printf("\n");
 
     graphMap[s] = n;
 
+    cur->edgeType[s] = make_pair(a, b);
+    n->edgeType[cur->label] = make_pair(a, b);
     cur->nei[indexPair(a, b, n_nodes)] = {n, a, b};
     n->nei[indexPair(a, b, n_nodes)] = {cur, a, b};
 
@@ -188,16 +195,22 @@ void AutoGraph::addEdge(int a, int b)
     createNeighbor(cur, a, b);
     e = cur->nei[indexPair(a, b, n_nodes)];
   }
-
-  swap(permutation[find(a)],
-       permutation[find(e.p1)]);
+  else
+    printf("Edge exists! (%d, %d)\n", a, b);
 
   if (b == e.p1)
     swap(permutation[find(a)],
          permutation[find(e.p2)]);
+  else if (a == e.p2)
+    swap(permutation[find(b)],
+         permutation[find(e.p1)]);
   else
+  {
+    swap(permutation[find(a)],
+         permutation[find(e.p1)]);
     swap(permutation[find(b)],
          permutation[find(e.p2)]);
+  }
 
   cur = e.dest;
 
@@ -228,16 +241,22 @@ void AutoGraph::remEdge(int a, int b)
     createNeighbor(cur, a, b);
     e = cur->nei[indexPair(a, b, n_nodes)];
   }
-
-  swap(permutation[find(a)],
-       permutation[find(e.p1)]);
+  else
+    printf("Edge exists! (%d, %d)\n", a, b);
 
   if (b == e.p1)
     swap(permutation[find(a)],
          permutation[find(e.p2)]);
+  else if (a == e.p2)
+    swap(permutation[find(b)],
+         permutation[find(e.p1)]);
   else
+  {
+    swap(permutation[find(a)],
+         permutation[find(e.p1)]);
     swap(permutation[find(b)],
          permutation[find(e.p2)]);
+  }
 
   cur = e.dest;
 
@@ -247,7 +266,7 @@ void AutoGraph::remEdge(int a, int b)
       printf("%d", adjM[i][j]);
   for (int i = 0; i < n_nodes; i++)
     printf(" %d", permutation[i]);
-  printf("\n");
+    printf("\n");
 }
 
 int AutoGraph::find(int a)

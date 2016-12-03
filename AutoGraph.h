@@ -19,6 +19,7 @@ public:
     string label;
     AEdge* nei;
     bool** adjM;
+    map<string, pair<int, int>> edgeType;
   };
 
   struct AEdge
