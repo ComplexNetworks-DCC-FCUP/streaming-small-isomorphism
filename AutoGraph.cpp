@@ -5,6 +5,10 @@ AutoGraph::AutoGraph(bool _directed, int _n)
   directed = _directed;
   n_nodes = _n;
 
+  iso = new Isomorphism();
+  iso->initNauty(_n, _directed);
+  stmp = new char[n_nodes * n_nodes];
+
   adjM = new bool*[n_nodes];
   for (int i = 0; i < n_nodes; i++)
     adjM[i] = new bool[n_nodes];
@@ -15,14 +19,27 @@ AutoGraph::AutoGraph(bool _directed, int _n)
 
   AutoGraph::ANode *e0, *e1, *e2, *e3;
   e0 = new AutoGraph::ANode();
-  e1 = new AutoGraph::ANode();
+/*  e1 = new AutoGraph::ANode();
   e2 = new AutoGraph::ANode();
-  e3 = new AutoGraph::ANode();
+  e3 = new AutoGraph::ANode();*/
 
   // Empty graph
-  e0->label = "000000000";
+  e0->label = "";
+  for (int i = 0; i < n_nodes * n_nodes; i++)
+    e0->label += "0";
+
   e0->nei = new AEdge[n_nodes * (n_nodes + 1) / 2];
-  e0->nei[indexPair(0, 1, n_nodes)] = {e1, 0, 1};
+  e0->adjM = new bool*[n_nodes];
+  for (int i = 0; i < n_nodes; i++)
+  {
+    e0->adjM[i] = new bool[n_nodes];
+    for (int j = 0; j < n_nodes; j++)
+      e0->adjM[i][j] = false;
+  }
+
+  graphMap[e0->label] = e0;
+
+/*  e0->nei[indexPair(0, 1, n_nodes)] = {e1, 0, 1};
   e0->nei[indexPair(0, 2, n_nodes)] = {e1, 0, 1};
   e0->nei[indexPair(1, 2, n_nodes)] = {e1, 0, 1};
 
@@ -45,7 +62,7 @@ AutoGraph::AutoGraph(bool _directed, int _n)
   e3->nei = new AEdge[n_nodes * (n_nodes + 1) / 2];
   e3->nei[indexPair(0, 1, n_nodes)] = {e2, 1, 2};
   e3->nei[indexPair(0, 2, n_nodes)] = {e2, 1, 2};
-  e3->nei[indexPair(1, 2, n_nodes)] = {e2, 1, 2};
+  e3->nei[indexPair(1, 2, n_nodes)] = {e2, 1, 2};*/
 
   cur = e0;
 }
@@ -55,13 +72,12 @@ AutoGraph::~AutoGraph()
   for (int i = 0; i < n_nodes; i++)
     delete[] adjM[i];
   delete[] adjM;
+
+  iso->finishNauty();
 }
 
 void AutoGraph::toggle(int a, int b)
 {
-  a = permutation[a];
-  b = permutation[b];
-
   if (a > b)
     swap(a, b);
 
@@ -81,23 +97,117 @@ string AutoGraph::canonicalLabel()
   return cur->label;
 }
 
+string AutoGraph::runNauty()
+{
+  string sv;
+
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < n_nodes; j++)
+      stmp[i * n_nodes + j] = adjM[i][j] ? '1' : '0';
+  stmp[n_nodes * n_nodes] = '\0';
+  sv = stmp;
+
+  iso->canonicalStrNauty(sv, stmp);
+  sv = stmp;
+
+  return sv;
+}
+
+void AutoGraph::createNeighbor(ANode* cur, int a, int b)
+{
+  string s = runNauty();
+
+  if (graphMap.count(s) != 0)
+  {
+    AutoGraph::ANode *n = graphMap[s];
+
+    int f1 = a, f2 = b;
+
+    for (int i = 0; i < n_nodes; i++)
+      for (int j = i + 1; j < n_nodes; j++)
+      {
+        int ii = permutation[i], jj = permutation[j];
+        if (ii > jj)
+          swap(ii, jj);
+
+        if (adjM[ii][jj] != n->adjM[i][j])
+        {
+          if (ii != a || jj != b)
+          {
+            f1 = ii, f2 = jj;
+            break;
+          }
+          printf("dif %d %d\n", ii, jj);
+        }
+      }
+
+    cur->nei[indexPair(a, b, n_nodes)] = {n, f1, f2};
+
+    printf("Created another edge from %s to %s (%d, %d) - (%d, %d)\n", cur->label.c_str(), s.c_str(), f1, f2, a, b);
+  }
+  else
+  {
+    AutoGraph::ANode *n;
+    n = new AutoGraph::ANode();
+
+    n->nei = new AEdge[n_nodes * (n_nodes + 1) / 2];
+    n->adjM = new bool*[n_nodes];
+    n->label = s;
+
+    for (int i = 0; i < n_nodes; i++)
+    {
+      n->adjM[i] = new bool[n_nodes];
+      for (int j = 0; j < n_nodes; j++)
+        n->adjM[i][j] = adjM[permutation[i]][permutation[j]];
+    }
+
+    graphMap[s] = n;
+
+    cur->nei[indexPair(a, b, n_nodes)] = {n, a, b};
+    n->nei[indexPair(a, b, n_nodes)] = {cur, a, b};
+
+    printf("Created new edge from %s to %s (%d, %d)\n", cur->label.c_str(), s.c_str(), a, b);
+  }
+}
+
 void AutoGraph::addEdge(int a, int b)
 {
   adjM[a][b] = true;
   if (!directed)
     adjM[b][a] = true;
 
-  swap(permutation[find(a)],
-       permutation[find(cur->nei[indexPair(a, b, n_nodes)].p1)]);
+  a = permutation[a];
+  b = permutation[b];
+  if (a > b)
+    swap(a, b);
 
-  if (b == cur->nei[indexPair(a, b, n_nodes)].p1)
+  AEdge e = cur->nei[indexPair(a, b, n_nodes)];
+
+  if (e.dest == NULL)
+  {
+    createNeighbor(cur, a, b);
+    e = cur->nei[indexPair(a, b, n_nodes)];
+  }
+
+  swap(permutation[find(a)],
+       permutation[find(e.p1)]);
+
+  if (b == e.p1)
     swap(permutation[find(a)],
-         permutation[find(cur->nei[indexPair(a, b, n_nodes)].p2)]);
+         permutation[find(e.p2)]);
   else
     swap(permutation[find(b)],
-         permutation[find(cur->nei[indexPair(a, b, n_nodes)].p2)]);
+         permutation[find(e.p2)]);
 
-  cur = cur->nei[indexPair(a, b, n_nodes)].dest;
+  cur = e.dest;
+
+  printf("A: ");
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < n_nodes; j++)
+      printf("%d", adjM[i][j]);
+  for (int i = 0; i < n_nodes; i++)
+    printf(" %d", permutation[i]);
+  printf("\n");
 }
 
 void AutoGraph::remEdge(int a, int b)
@@ -106,17 +216,38 @@ void AutoGraph::remEdge(int a, int b)
   if (!directed)
     adjM[b][a] = false;
 
-  swap(permutation[find(a)],
-       permutation[find(cur->nei[indexPair(a, b, n_nodes)].p1)]);
+  a = permutation[a];
+  b = permutation[b];
+  if (a > b)
+    swap(a, b);
 
-  if (b == cur->nei[indexPair(a, b, n_nodes)].p1)
+  AEdge e = cur->nei[indexPair(a, b, n_nodes)];
+
+  if (e.dest == NULL)
+  {
+    createNeighbor(cur, a, b);
+    e = cur->nei[indexPair(a, b, n_nodes)];
+  }
+
+  swap(permutation[find(a)],
+       permutation[find(e.p1)]);
+
+  if (b == e.p1)
     swap(permutation[find(a)],
-         permutation[find(cur->nei[indexPair(a, b, n_nodes)].p2)]);
+         permutation[find(e.p2)]);
   else
     swap(permutation[find(b)],
-         permutation[find(cur->nei[indexPair(a, b, n_nodes)].p2)]);
+         permutation[find(e.p2)]);
 
-  cur = cur->nei[indexPair(a, b, n_nodes)].dest;
+  cur = e.dest;
+
+  printf("R: ");
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < n_nodes; j++)
+      printf("%d", adjM[i][j]);
+  for (int i = 0; i < n_nodes; i++)
+    printf(" %d", permutation[i]);
+  printf("\n");
 }
 
 int AutoGraph::find(int a)

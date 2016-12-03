@@ -2,6 +2,8 @@
 
 #include "IsoGraph.h"
 #include "Isomorphism.h"
+#include <map>
+
 
 class AutoGraph : public IsoGraph
 {
@@ -16,6 +18,7 @@ public:
   {
     string label;
     AEdge* nei;
+    bool** adjM;
   };
 
   struct AEdge
@@ -35,8 +38,14 @@ private:
   void remEdge(int a, int b);
 
   int find(int a);
+  string runNauty();
+  void createNeighbor(ANode* cur, int a, int b);
+
+  map<string, ANode*> graphMap;
 
   int* permutation;
+  char* stmp;
   bool** adjM;
   ANode* cur;
+  Isomorphism* iso;
 };
