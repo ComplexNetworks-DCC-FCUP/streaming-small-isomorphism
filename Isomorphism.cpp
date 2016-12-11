@@ -46,8 +46,8 @@ void Isomorphism::finishNauty() {
   nautil_freedyn();
 }
 
-void Isomorphism::canonicalStrNauty(std::string v, char *s) {
-
+void Isomorphism::canonicalStrNauty(std::string v, char *s, int *perm)
+{
   int i, j, aux;
 
   for (int i=0; i<n; i++) {
@@ -59,8 +59,12 @@ void Isomorphism::canonicalStrNauty(std::string v, char *s) {
         ADDELEMENT(gv,j);
   }
 
-  nauty(g,lab,ptn,NULL,orbits,&options,&stats,
-        workspace,WORKSPACE_SIZE,m,n,mm);
+  if (perm == NULL)
+    nauty(g,lab,ptn,NULL,orbits,&options,&stats,
+          workspace,WORKSPACE_SIZE,m,n,mm);
+  else
+    nauty(g,perm,ptn,NULL,orbits,&options,&stats,
+          workspace,WORKSPACE_SIZE,m,n,mm);
   
   aux=0;
   for (i=0; i<n; i++) {

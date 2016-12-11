@@ -4,7 +4,6 @@
 #include "Isomorphism.h"
 #include <map>
 
-
 class AutoGraph : public IsoGraph
 {
 public:
@@ -13,13 +12,18 @@ public:
 
   struct AEdge;
   struct ANode;
+  struct APerm;
+
+  struct APerm
+  {
+    int *perm, p1, p2;
+  };
 
   struct ANode
   {
     string label;
     AEdge* nei;
-    bool** adjM;
-    map<string, pair<int, int>> edgeType;
+    map<string, APerm> edgePerm;
   };
 
   struct AEdge
@@ -39,12 +43,16 @@ private:
   void remEdge(int a, int b);
 
   int find(int a);
-  string runNauty();
-  void createNeighbor(ANode* cur, int a, int b);
+  void compose(int* perm);
+  void applyTranspositions(int a, int b, int p1, int p2);
+
+  string runNauty(bool apply = false);
+  bool nautyCon(string& s, int i, int j);
+  ANode* createNeighbor(ANode* cur, int a, int b);
 
   map<string, ANode*> graphMap;
 
-  int* permutation;
+  int* permutation, *tmp;
   char* stmp;
   bool** adjM;
   ANode* cur;

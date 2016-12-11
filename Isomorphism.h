@@ -27,7 +27,7 @@ class Isomorphism {
   void initNauty(int size, bool dir);
   void finishNauty();
 
-  void canonicalStrNauty(string v, char *s);
+  void canonicalStrNauty(string v, char *s, int *perm = NULL);
 };
 
 #endif
