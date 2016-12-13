@@ -25,7 +25,7 @@ int main()
     string s1 = g1->canonicalLabel().c_str();
     string s2 = g2->canonicalLabel().c_str();
 
-    printf("   %s %s %d (%d, %d)\n", s1.c_str(), s2.c_str(), ord++, a, b);
+//    printf("   %s %s %d (%d, %d)\n", s1.c_str(), s2.c_str(), ord++, a, b);
  
     assert(s1 == s2);
   }

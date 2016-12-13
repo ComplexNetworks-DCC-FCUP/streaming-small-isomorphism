@@ -60,11 +60,10 @@ void Isomorphism::canonicalStrNauty(std::string v, char *s, int *perm)
   }
 
   if (perm == NULL)
-    nauty(g,lab,ptn,NULL,orbits,&options,&stats,
-          workspace,WORKSPACE_SIZE,m,n,mm);
-  else
-    nauty(g,perm,ptn,NULL,orbits,&options,&stats,
-          workspace,WORKSPACE_SIZE,m,n,mm);
+    perm = lab;
+
+  nauty(g,perm,ptn,NULL,orbits,&options,&stats,
+        workspace,WORKSPACE_SIZE,m,n,mm);
   
   aux=0;
   for (i=0; i<n; i++) {
