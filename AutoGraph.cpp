@@ -119,14 +119,14 @@ void AutoGraph::createNeighbor(ANode* cur, int a, int b)
 
   compose(nperm);
 
-  printf("P:");
+/*  printf("P:");
   for (int i = 0; i < n_nodes; i++)
     printf(" %d", npermi[i]);
   printf(", %s\n", s.c_str());
   printf("O:");
   for (int i = 0; i < n_nodes; i++)
     printf(" %d", tmp[i]);
-  printf(", %d %d (%d %d)\n", ai, bi, tmp[ai], tmp[bi]);
+    printf(", %d %d (%d %d)\n", ai, bi, tmp[ai], tmp[bi]);*/
 
   for (int i = 0; i < n_nodes; i++)
     if (tmp[i] == tmp[ai])
@@ -145,15 +145,17 @@ void AutoGraph::createNeighbor(ANode* cur, int a, int b)
           applyTranspositions(tmp2, ai, bi, i, j);
 
           int* npermorb = new int[n_nodes];
+          int* npermorbi = new int[n_nodes];
           for (int i = 0; i < n_nodes; i++)
-            npermorb[i] = nperm[tmp2[i]];
+            npermorb[i] = npermi[tmp2[i]];
+          for (int i = 0; i < n_nodes; i++)
+            npermorbi[npermorb[i]] = i;
 
-          //cur->nei[indexPair(i, j)] = {n, npermorb};
           n->nei[indexPair(i, j)] = {cur, npermorb};
-          printf("Other auto: %d %d <-> %d %d (%p)\nx:", i, j, ai, bi, npermorb);
-          for (int i = 0; i < n_nodes; i++)
-            printf(" %d", npermorb[i]);
-          printf("\n");
+
+          int ii = npermorb[i], jj = npermorb[j];
+          cur->nei[indexPair(ii, jj)] = {n, npermorbi};
+//          printf("Other auto: %d %d <-> %d %d (%p)\nx:", i, j, ai, bi, npermorb);
         }
 }
 
@@ -184,16 +186,13 @@ void AutoGraph::applyAutomatomChange(int a, int b)
     e = cur->nei[indexPair(a, b)];
   }
   else
-  {
     compose(e.p);
-    printf("%p ", e.p);
-  }
   cur = e.dest;
 
-  printf("p:");
+/*  printf("p:");
   for (int i = 0; i < n_nodes; i++)
     printf(" %d", permutation[i]);
-  printf("\n");
+    printf("\n");*/
 }
 
 void AutoGraph::applyTranspositions(int* p, int a1, int a2, int b1, int b2)
