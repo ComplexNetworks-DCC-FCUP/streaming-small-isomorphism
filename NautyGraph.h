@@ -18,6 +18,6 @@ private:
   void remEdge(int a, int b);
 
   bool** adjM;
-  char* stmp;
+  char* stmp, *stmp2;
   Isomorphism* iso;
 };

@@ -36,16 +36,18 @@ private:
   void compose(int* perm);
 
   int indexPair(int a, int b);
+  void applyTranspositions(int* p, int a1, int a2, int b1, int b2);
+  int find(int* p, int a);
 
-  string runNauty(bool apply = false);
+  string runNauty();
   void applyAutomatomChange(int a, int b);
   void createNeighbor(ANode* cur, int a, int b);
 
   map<string, ANode*> graphMap;
 
   int nei_size;
-  int* permutation, *tmp;
-  char* stmp;
+  int* permutation, *tmp, *tmp2;
+  char* stmp, *stmp2;
   bool** adjM;
   ANode* cur;
   Isomorphism* iso;
