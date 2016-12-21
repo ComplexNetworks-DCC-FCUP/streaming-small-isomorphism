@@ -4,6 +4,10 @@
 #include "Isomorphism.h"
 #include <map>
 
+#define getPerm(p,i) (((p) >> ((i) * 4)) & 15)
+#define setPerm(p,i,s) ((p) = (((p) & (~(15LL << ((i) * 4)))) | ((0LL + (s)) << ((i) * 4))))
+typedef long long int Perm;
+
 class AutoGraph : public IsoGraph
 {
 public:
@@ -22,7 +26,7 @@ public:
   struct AEdge
   {
     ANode* dest;
-    int* p;
+    Perm p;
   };
 
   void toggle(int a, int b);
@@ -33,11 +37,11 @@ private:
   void addEdge(int a, int b);
   void remEdge(int a, int b);
 
-  void compose(int* perm);
+  void compose(Perm perm);
+  Perm compress(Perm perm);
 
   int indexPair(int a, int b);
-  void applyTranspositions(int* p, int a1, int a2, int b1, int b2);
-  int find(int* p, int a);
+  void applyTranspositions(Perm p, int a1, int a2, int b1, int b2);
 
   string runNauty();
   void applyAutomatomChange(int a, int b);
@@ -45,8 +49,10 @@ private:
 
   map<string, ANode*> graphMap;
 
+  Perm pers[11] = {0, 16, 528, 12816, 274960, 5517840, 106181136LL, 1985229328LL, 36344967696LL, 654820258320LL, 11649936536080LL};
   int nei_size, step;
-  int* permutation, *tmp, *tmp2;
+  Perm permutation, tmp, tmp2;
+  int* tmpNauty, *tmp2Nauty;
   char* stmp, *stmp2;
   bool** adjM;
   ANode* cur;

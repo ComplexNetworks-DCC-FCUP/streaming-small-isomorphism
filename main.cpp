@@ -30,7 +30,7 @@ int main()
     assert(s1 == s2);
   }
 
-  printf("%d of %d\n", g2->stat[0], g2->stat[1]);
+  printf("%d %d\n", g2->stat[0], g2->stat[1]);
 
   return 0;
 }
