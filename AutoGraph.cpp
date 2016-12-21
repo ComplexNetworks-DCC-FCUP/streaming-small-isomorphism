@@ -18,9 +18,13 @@ AutoGraph::AutoGraph(bool _directed, int _n)
   for (int i = 0; i < n_nodes; i++)
     adjM[i] = new bool[n_nodes];
 
+  stat = new int[2];
+  stat[0] = stat[1] = 0;
+
   tmp = new int[n_nodes];
   tmp2 = new int[n_nodes];
-  permutation = new int[n_nodes];
+  permutation = new int[2 * n_nodes];
+  step = 0;
   for (int i = 0; i < n_nodes; i++)
     permutation[i] = i;
 
@@ -77,7 +81,7 @@ string AutoGraph::runNauty()
 {
   for (int i = 0; i < n_nodes; i++)
     for (int j = 0; j < n_nodes; j++)
-      stmp[permutation[i] * n_nodes + permutation[j]] = adjM[i][j] ? '1' : '0';
+      stmp[permutation[i + step * n_nodes] * n_nodes + permutation[j + step * n_nodes]] = adjM[i][j] ? '1' : '0';
   stmp[n_nodes * n_nodes] = '\0';
 
   iso->canonicalStrNauty(stmp, stmp2, tmp, tmp2);
@@ -114,6 +118,11 @@ void AutoGraph::createNeighbor(ANode* cur, int a, int b)
   cur->nei[indexPair(a, b)] = {n, nperm};
   n->nei[indexPair(ai, bi)] = {cur, npermi};
 
+/*  printf("O1:");
+  for (int i = 0; i < n_nodes; i++)
+    printf(" %d", tmp2[i]);
+    printf("\n");*/
+
   for (int i = 0; i < n_nodes; i++)
     tmp[nperm[i]] = tmp2[i];
 
@@ -128,34 +137,55 @@ void AutoGraph::createNeighbor(ANode* cur, int a, int b)
     printf(" %d", tmp[i]);
     printf(", %d %d (%d %d)\n", ai, bi, tmp[ai], tmp[bi]);*/
 
+  if (n_nodes <= 3)
+    return;
+
   for (int i = 0; i < n_nodes; i++)
     if (tmp[i] == tmp[ai])
       for (int j = (tmp[ai] == tmp[bi] ? i + 1 : 0); j < n_nodes; j++)
         if (tmp[j] == tmp[bi] && (i != ai || j != bi))
         {
+          if (n->nei[indexPair(i, j)].dest != NULL)
+            continue;
+
           if (min(ai, bi) == min(i, j) && max(ai, bi) == max(i, j))
             continue;
 
-          if (adjM[find(permutation, ai)][find(permutation, bi)] !=
-              adjM[find(permutation, i)][find(permutation, j)])
-            continue;
+//          if (adjM[find(permutation + step * n_nodes, ai)][find(permutation + step * n_nodes, bi)] !=
+//              adjM[find(permutation + step * n_nodes, i)][find(permutation + step * n_nodes, j)])
+//            continue;
 
           for (int i = 0; i < n_nodes; i++)
             tmp2[i] = i;
           applyTranspositions(tmp2, ai, bi, i, j);
 
-          int* npermorb = new int[n_nodes];
-          int* npermorbi = new int[n_nodes];
           for (int i = 0; i < n_nodes; i++)
-            npermorb[i] = npermi[tmp2[i]];
-          for (int i = 0; i < n_nodes; i++)
-            npermorbi[npermorb[i]] = i;
+            tmp[i] = npermi[tmp2[i]];
 
-          n->nei[indexPair(i, j)] = {cur, npermorb};
+          string t = cur->label;
+          t[a * n_nodes + b] = t[a * n_nodes + b] == '1' ? '0' : '1';
+          t[b * n_nodes + a] = t[b * n_nodes + a] == '1' ? '0' : '1';
+          int fl = 1;
+          for (int x = 0; fl && x < n_nodes; x++)
+            for (int y = 0; y < n_nodes; y++)
+              if (s[x * n_nodes + y] != t[tmp[x] * n_nodes + tmp[y]])
+              {
+                fl = 0;
+                break;
+              }
 
-          int ii = npermorb[i], jj = npermorb[j];
-          cur->nei[indexPair(ii, jj)] = {n, npermorbi};
-//          printf("Other auto: %d %d <-> %d %d (%p)\nx:", i, j, ai, bi, npermorb);
+          if (fl)
+          {
+            int* npermorb = new int[n_nodes];
+            int* npermorbi = new int[n_nodes];
+            memcpy(npermorb, tmp, n_nodes * sizeof(int));
+            for (int i = 0; i < n_nodes; i++)
+              npermorbi[npermorb[i]] = i;
+
+            int ii = npermorb[i], jj = npermorb[j];
+            cur->nei[indexPair(ii, jj)] = {n, npermorbi};
+            n->nei[indexPair(i, j)] = {cur, npermorb};
+          }
         }
 }
 
@@ -175,8 +205,8 @@ void AutoGraph::remEdge(int a, int b)
 
 void AutoGraph::applyAutomatomChange(int a, int b)
 {
-  a = permutation[a];
-  b = permutation[b];
+  a = permutation[a + step * n_nodes];
+  b = permutation[b + step * n_nodes];
 
   AEdge e = cur->nei[indexPair(a, b)];
 
@@ -186,12 +216,15 @@ void AutoGraph::applyAutomatomChange(int a, int b)
     e = cur->nei[indexPair(a, b)];
   }
   else
+  {
     compose(e.p);
+//    printf("x: %p, ", e.p);
+  }
   cur = e.dest;
 
 /*  printf("p:");
   for (int i = 0; i < n_nodes; i++)
-    printf(" %d", permutation[i]);
+    printf(" %d", permutation[i + step * n_nodes]);
     printf("\n");*/
 }
 
@@ -229,9 +262,8 @@ int AutoGraph::find(int* p, int a)
 void AutoGraph::compose(int* perm)
 {
   for (int i = 0; i < n_nodes; i++)
-    tmp2[i] = perm[permutation[i]];
-  for (int i = 0; i < n_nodes; i++)
-    permutation[i] = tmp2[i];
+    permutation[i + (1 - step) * n_nodes] = perm[permutation[i + step * n_nodes]];
+  step = 1 - step;
 }
 
 int AutoGraph::indexPair(int a, int b)

@@ -11,6 +11,8 @@ public:
   virtual bool isConnected(int a, int b) = 0;
   virtual string canonicalLabel() = 0;
 
+  int* stat;
+
 protected:
   bool directed;
   int n_nodes;

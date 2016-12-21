@@ -45,7 +45,7 @@ private:
 
   map<string, ANode*> graphMap;
 
-  int nei_size;
+  int nei_size, step;
   int* permutation, *tmp, *tmp2;
   char* stmp, *stmp2;
   bool** adjM;
