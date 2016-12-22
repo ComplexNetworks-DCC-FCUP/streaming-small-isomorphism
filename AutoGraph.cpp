@@ -25,7 +25,7 @@ AutoGraph::AutoGraph(bool _directed, int _n)
   tmp2Nauty = new int[n_nodes];
   tmp = 0;
   tmp2 = 0;
-  permutation = pers[n_nodes];
+  permutation = ipermutation = pers[n_nodes];
 
   AutoGraph::ANode *e0 = new AutoGraph::ANode();
 
@@ -243,11 +243,11 @@ Perm AutoGraph::compress(Perm perm)
 {
   Perm res = 0;
   int fl = 1;
-  int fb = -1;
+  int fb = -1, fc = -1;
   for (int i = 0; i < n_nodes; i++)
-    if (i != fb && getPerm(perm, i) != i)
+    if (i != fb && i != fc && getPerm(perm, i) != i)
     {
-      if (fl == 2)
+      if (fl == min(2, 1 + n_nodes / 7))
       {
         fl = 0;
         break;
@@ -262,43 +262,58 @@ Perm AutoGraph::compress(Perm perm)
         break;
       }
 
-      setPerm(res, 0, a);
-      setPerm(res, 1, b);
-//      setPerm(res, 0 + 2 * (fl - 1), a);
-//      setPerm(res, 1 + 2 * (fl - 1), b);
-      fb = b;
+      setPerm(res, 0 + 2 * (fl - 1), a);
+      setPerm(res, 1 + 2 * (fl - 1), b);
+
+      if (fb + 1)
+        fc = b;
+      else
+        fb = b;
       fl++;
     }
 
   stat[0] += fl > 0;
   stat[1]++;
+
+//  return perm;
   return fl ? (res << 2) + fl: (perm << 2);
 }
 
 void AutoGraph::compose(Perm perm)
 {
+/*
+  Perm t = permutation;
+  for (int i = 0; i < n_nodes; i++)
+  setPerm(permutation, i, getPerm(perm, getPerm(t, i))); // */
+
   if ((perm & 3) == 0)
   {
     perm >>= 2;
     Perm t = permutation;
     for (int i = 0; i < n_nodes; i++)
-      setPerm(permutation, i, getPerm(perm, getPerm(t, i)));
-  }
-  else
-  {
-    int times = (perm & 3) - 1;
-    perm >>= 2;
-
-    while (times--)
     {
-      int a = getPerm(perm, 0);
-      int b = getPerm(perm, 1);
-      int t = getPerm(permutation, a);
-      setPerm(permutation, a, getPerm(permutation, b));
-      setPerm(permutation, b, t);
-      perm >>= 8;
+      int a = getPerm(perm, getPerm(t, i));
+      setPerm(permutation, i, a);
+      setPerm(ipermutation, a, i);
     }
   }
+  else if ((perm & 3) - 1)
+  {
+    perm >>= 2;
+
+    int a = getPerm(perm, 0);
+    int b = getPerm(perm, 1);
+    int ai = getPerm(ipermutation, a);
+    int bi = getPerm(ipermutation, b);
+
+    int t = getPerm(permutation, ai);
+    setPerm(permutation, ai, getPerm(permutation, bi));
+    setPerm(permutation, bi, t);
+
+    t = getPerm(ipermutation, a);
+    setPerm(ipermutation, a, getPerm(ipermutation, b));
+    setPerm(ipermutation, b, t);
+  } // */
 }
 
 int AutoGraph::indexPair(int a, int b)

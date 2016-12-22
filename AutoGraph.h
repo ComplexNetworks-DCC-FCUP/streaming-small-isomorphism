@@ -49,9 +49,9 @@ private:
 
   map<string, ANode*> graphMap;
 
-  Perm pers[11] = {0, 16, 528, 12816, 274960, 5517840, 106181136LL, 1985229328LL, 36344967696LL, 654820258320LL, 11649936536080LL};
+  Perm pers[12] = {0, 0, 16, 528, 12816, 274960, 5517840, 106181136LL, 1985229328LL, 36344967696LL, 654820258320LL, 11649936536080LL};
   int nei_size, step;
-  Perm permutation, tmp, tmp2;
+  Perm permutation, ipermutation, tmp, tmp2;
   int* tmpNauty, *tmp2Nauty;
   char* stmp, *stmp2;
   bool** adjM;
