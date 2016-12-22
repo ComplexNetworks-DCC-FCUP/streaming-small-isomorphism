@@ -18,9 +18,6 @@ AutoGraph::AutoGraph(bool _directed, int _n)
   for (int i = 0; i < n_nodes; i++)
     adjM[i] = new bool[n_nodes];
 
-  stat = new int[2];
-  stat[0] = stat[1] = 0;
-
   tmpNauty = new int[n_nodes];
   tmp2Nauty = new int[n_nodes];
   tmp = 0;
@@ -48,7 +45,8 @@ AutoGraph::~AutoGraph()
   for (int i = 0; i < n_nodes; i++)
     delete[] adjM[i];
   delete[] adjM;
-
+  delete[] tmpNauty;
+  delete[] tmp2Nauty;
   delete[] stmp;
   delete[] stmp2;
   iso->finishNauty();
@@ -79,7 +77,7 @@ string AutoGraph::runNauty()
 {
   for (int i = 0; i < n_nodes; i++)
     for (int j = 0; j < n_nodes; j++)
-      stmp[getPerm(permutation, i + step * n_nodes) * n_nodes + getPerm(permutation, j + step * n_nodes)] = adjM[i][j] ? '1' : '0';
+      stmp[getPerm(permutation, i) * n_nodes + getPerm(permutation, j)] = adjM[i][j] ? '1' : '0';
   stmp[n_nodes * n_nodes] = '\0';
 
   iso->canonicalStrNauty(stmp, stmp2, tmpNauty, tmp2Nauty);
@@ -132,7 +130,7 @@ void AutoGraph::createNeighbor(ANode* cur, int a, int b)
 
   compose(compress(nperm));
 
-  if (n_nodes <= 14)
+  if (n_nodes <= 4)
     return;
 
   string t = cur->label;
@@ -147,8 +145,7 @@ void AutoGraph::createNeighbor(ANode* cur, int a, int b)
           if (n->nei[indexPair(i, j)].dest != NULL)
             continue;
 
-          tmp2 = pers[n_nodes];
-          applyTranspositions(tmp2, ai, bi, i, j);
+          tmp2 = applyTranspositions(pers[n_nodes], ai, bi, i, j);
 
           for (int i = 0; i < n_nodes; i++)
             setPerm(tmp, i, getPerm(npermi, getPerm(tmp2, i)));
@@ -207,7 +204,7 @@ void AutoGraph::applyAutomatomChange(int a, int b)
   cur = e.dest;
 }
 
-void AutoGraph::applyTranspositions(Perm p, int a1, int a2, int b1, int b2)
+Perm AutoGraph::applyTranspositions(Perm p, int a1, int a2, int b1, int b2)
 {
   if (a1 > a2)
     swap(a1, a2);
@@ -237,83 +234,29 @@ void AutoGraph::applyTranspositions(Perm p, int a1, int a2, int b1, int b2)
     setPerm(p, a2, getPerm(p, b2));
     setPerm(p, b2, t);
   }
+
+  return p;
 }
 
 Perm AutoGraph::compress(Perm perm)
 {
-  Perm res = 0;
   int fl = 1;
-  int fb = -1, fc = -1;
-  for (int i = 0; i < n_nodes; i++)
-    if (i != fb && i != fc && getPerm(perm, i) != i)
-    {
-      if (fl == min(2, 1 + n_nodes / 7))
-      {
-        fl = 0;
-        break;
-      }
+  for (int i = 0; fl && i < n_nodes; i++)
+    if (getPerm(perm, i) != i)
+      fl = 0;
 
-      int a = i;
-      int b = getPerm(perm, i);
-
-      if (getPerm(perm, b) != a)
-      {
-        fl = 0;
-        break;
-      }
-
-      setPerm(res, 0 + 2 * (fl - 1), a);
-      setPerm(res, 1 + 2 * (fl - 1), b);
-
-      if (fb + 1)
-        fc = b;
-      else
-        fb = b;
-      fl++;
-    }
-
-  stat[0] += fl > 0;
-  stat[1]++;
-
-//  return perm;
-  return fl ? (res << 2) + fl: (perm << 2);
+  return fl ? 0: (perm << 1) + 1;
 }
 
 void AutoGraph::compose(Perm perm)
 {
-/*
-  Perm t = permutation;
-  for (int i = 0; i < n_nodes; i++)
-  setPerm(permutation, i, getPerm(perm, getPerm(t, i))); // */
-
-  if ((perm & 3) == 0)
+  if (perm & 1)
   {
-    perm >>= 2;
+    perm >>= 1;
     Perm t = permutation;
     for (int i = 0; i < n_nodes; i++)
-    {
-      int a = getPerm(perm, getPerm(t, i));
-      setPerm(permutation, i, a);
-      setPerm(ipermutation, a, i);
-    }
+      setPerm(permutation, i, getPerm(perm, getPerm(t, i)));
   }
-  else if ((perm & 3) - 1)
-  {
-    perm >>= 2;
-
-    int a = getPerm(perm, 0);
-    int b = getPerm(perm, 1);
-    int ai = getPerm(ipermutation, a);
-    int bi = getPerm(ipermutation, b);
-
-    int t = getPerm(permutation, ai);
-    setPerm(permutation, ai, getPerm(permutation, bi));
-    setPerm(permutation, bi, t);
-
-    t = getPerm(ipermutation, a);
-    setPerm(ipermutation, a, getPerm(ipermutation, b));
-    setPerm(ipermutation, b, t);
-  } // */
 }
 
 int AutoGraph::indexPair(int a, int b)

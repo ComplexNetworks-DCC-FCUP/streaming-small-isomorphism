@@ -41,7 +41,7 @@ private:
   Perm compress(Perm perm);
 
   int indexPair(int a, int b);
-  void applyTranspositions(Perm p, int a1, int a2, int b1, int b2);
+  Perm applyTranspositions(Perm p, int a1, int a2, int b1, int b2);
 
   string runNauty();
   void applyAutomatomChange(int a, int b);
