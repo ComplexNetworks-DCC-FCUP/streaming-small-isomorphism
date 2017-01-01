@@ -4,8 +4,8 @@
 #include "Isomorphism.h"
 #include <map>
 
-#define getPerm(p,i) (((p) >> ((i) * 4)) & 15)
-#define setPerm(p,i,s) ((p) = (((p) & (~(15LL << ((i) * 4)))) | ((0LL + (s)) << ((i) * 4))))
+#define getPerm(p,i) (((p) >> ((i) << 2)) & 15)
+#define setPerm(p,i,s) ((p) = (((p) & (~(15LL << ((i) << 2)))) | ((0LL + (s)) << ((i) << 2))))
 typedef long long int Perm;
 
 class AutoGraph : public IsoGraph
@@ -32,13 +32,17 @@ public:
   void toggle(int a, int b);
   bool isConnected(int a, int b);
   string canonicalLabel();
+  void prebuild();
 
 private:
   void addEdge(int a, int b);
   void remEdge(int a, int b);
 
   void compose(Perm perm);
+  Perm compose(Perm p1, Perm p2);
+  Perm invert(Perm p);
   Perm compress(Perm perm);
+  int find(Perm p, int a);
 
   int indexPair(int a, int b);
   Perm applyTranspositions(Perm p, int a1, int a2, int b1, int b2);
@@ -47,7 +51,10 @@ private:
   void applyAutomatomChange(int a, int b);
   void createNeighbor(ANode* cur, int a, int b);
 
+  void prebuild(ANode* cur, int a, int b);
+
   map<string, ANode*> graphMap;
+  map<string, Perm> canonMap;
 
   Perm pers[12] = {0, 0, 16, 528, 12816, 274960, 5517840, 106181136LL, 1985229328LL, 36344967696LL, 654820258320LL, 11649936536080LL};
   int nei_size, step;

@@ -23,6 +23,8 @@ AutoGraph::AutoGraph(bool _directed, int _n)
   tmp = 0;
   tmp2 = 0;
   permutation = ipermutation = pers[n_nodes];
+  stat = new int[2];
+  stat[0] = stat[1] = 0;
 
   AutoGraph::ANode *e0 = new AutoGraph::ANode();
 
@@ -38,6 +40,7 @@ AutoGraph::AutoGraph(bool _directed, int _n)
   graphMap[e0->label] = e0;
 
   cur = e0;
+  prebuild();
 }
 
 AutoGraph::~AutoGraph()
@@ -71,6 +74,103 @@ bool AutoGraph::isConnected(int a, int b)
 string AutoGraph::canonicalLabel()
 {
   return cur->label;
+}
+
+void AutoGraph::prebuild()
+{
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < n_nodes; j++)
+      if (i != j && cur->nei[indexPair(i, j)].dest == NULL)
+      {
+        adjM[i][j] = 1;
+        if (!directed)
+          adjM[j][i] = 1;
+
+        prebuild(cur, i, j);
+
+        adjM[i][j] = 0;
+        if (!directed)
+          adjM[j][i] = 0;
+      }
+}
+
+void AutoGraph::prebuild(AutoGraph::ANode* cur, int a, int b)
+{
+  AutoGraph::ANode* n;
+  string s = runNauty();
+  Perm ts;
+  bool build = true;
+
+  if (graphMap.count(s) != 0)
+  {
+    n = graphMap[s];
+    ts = canonMap[s];
+    build = false;
+  }
+  else
+  {
+    n = new AutoGraph::ANode();
+
+    n->nei = new AEdge[nei_size];
+    for (int i = 0; i < nei_size; i++)
+      n->nei[i].dest = NULL;
+
+    n->label = s;
+
+    graphMap[s] = n;
+    ts = tmp;
+    canonMap[s] = ts;
+  }
+
+  Perm nperm = 0;
+  Perm npermi = 0;
+
+  nperm = invert(tmp);
+//  nperm = compose(nperm, ts);
+  npermi = invert(nperm);
+
+  int ct = 0;
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < i; j++)
+      if (getPerm(nperm, i) < getPerm(nperm, j))
+        ct++;
+  stat[0] += ct < 1;
+  ct = 0;
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < i; j++)
+      if (getPerm(npermi, i) < getPerm(npermi, j))
+        ct++;
+  stat[0] += ct < 1;
+  stat[1] += 2;
+
+  int ai = getPerm(nperm, a), bi = getPerm(nperm, b);
+
+  cur->nei[indexPair(a, b)] = {n, compress(nperm)};
+  n->nei[indexPair(ai, bi)] = {cur, compress(npermi)};
+
+  if (!build)
+    return;
+
+  Perm t = permutation;
+  compose(compress(nperm));
+
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < n_nodes; j++)
+      if (i != j &&
+          n->nei[indexPair(getPerm(permutation, i), getPerm(permutation, j))].dest == NULL)
+      {
+        adjM[i][j] = 1 - adjM[i][j];
+        if (!directed)
+          adjM[j][i] = 1 - adjM[j][i];
+
+        prebuild(n, getPerm(permutation, i), getPerm(permutation, j));
+
+        adjM[i][j] = 1 - adjM[i][j];
+        if (!directed)
+          adjM[j][i] = 1 - adjM[j][i];
+      }
+
+  permutation = t;
 }
 
 string AutoGraph::runNauty()
@@ -257,6 +357,30 @@ void AutoGraph::compose(Perm perm)
     for (int i = 0; i < n_nodes; i++)
       setPerm(permutation, i, getPerm(perm, getPerm(t, i)));
   }
+}
+
+Perm AutoGraph::compose(Perm p1, Perm p2)
+{
+  Perm t = 0;
+  for (int i = 0; i < n_nodes; i++)
+    setPerm(t, i, getPerm(p2, getPerm(p1, i)));
+  return t;
+}
+
+Perm AutoGraph::invert(Perm p)
+{
+  Perm t = 0;
+  for (int i = 0; i < n_nodes; i++)
+    setPerm(t, getPerm(p, i), i);
+  return t;
+}
+
+int AutoGraph::find(Perm p, int a)
+{
+  for (int i = 0; i < n_nodes; i++)
+    if (getPerm(p, i) == a)
+      return i;
+  return -1;
 }
 
 int AutoGraph::indexPair(int a, int b)
