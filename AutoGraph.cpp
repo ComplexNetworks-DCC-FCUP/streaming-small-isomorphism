@@ -18,6 +18,10 @@ AutoGraph::AutoGraph(bool _directed, int _n, bool _prebuild)
   for (int i = 0; i < n_nodes; i++)
     adjM[i] = new bool[n_nodes];
 
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < n_nodes; j++)
+      adjM[i][j] = 0;
+
   tmpNauty = new int[n_nodes];
   tmp2Nauty = new int[n_nodes];
   tmp = 0;
@@ -128,7 +132,7 @@ void AutoGraph::prebuild(AutoGraph::ANode* cur, int a, int b)
   Perm npermi = 0;
 
   nperm = invert(tmp);
-//  nperm = compose(nperm, ts);
+  nperm = compose(nperm, ts);
   npermi = invert(nperm);
 
   int ct = 0;
@@ -136,13 +140,13 @@ void AutoGraph::prebuild(AutoGraph::ANode* cur, int a, int b)
     for (int j = 0; j < i; j++)
       if (getPerm(nperm, i) < getPerm(nperm, j))
         ct++;
-  stat[0] += ct < 1;
+  stat[0] += ct <= 1;
   ct = 0;
   for (int i = 0; i < n_nodes; i++)
     for (int j = 0; j < i; j++)
       if (getPerm(npermi, i) < getPerm(npermi, j))
         ct++;
-  stat[0] += ct < 1;
+  stat[0] += ct <= 1;
   stat[1] += 2;
 
   int ai = getPerm(nperm, a), bi = getPerm(nperm, b);
@@ -154,25 +158,48 @@ void AutoGraph::prebuild(AutoGraph::ANode* cur, int a, int b)
     return;
 
   Perm t = permutation;
+  Perm it = ipermutation;
   compose(compress(nperm));
 
+  list<pair<int, int> > ls, l2;
   for (int i = 0; i < n_nodes; i++)
     for (int j = 0; j < n_nodes; j++)
       if (i != j &&
           n->nei[indexPair(getPerm(permutation, i), getPerm(permutation, j))].dest == NULL)
       {
-        adjM[i][j] = 1 - adjM[i][j];
-        if (!directed)
-          adjM[j][i] = 1 - adjM[j][i];
-
-        prebuild(n, getPerm(permutation, i), getPerm(permutation, j));
-
-        adjM[i][j] = 1 - adjM[i][j];
-        if (!directed)
-          adjM[j][i] = 1 - adjM[j][i];
+        if (!adjM[i][j])
+          l2.push_back(make_pair(i, j));
+        else
+          ls.push_back(make_pair(i, j));
       }
 
+  reverse(ls.begin(), ls.end());
+  for (auto pi : l2)
+    ls.push_back(pi);
+
+  for (pair<int, int> pi : ls)
+  {
+    int i = pi.first;
+    int j = pi.second;
+    int ii = getPerm(permutation, i);
+    int jj = getPerm(permutation, j);
+
+    if (n->nei[indexPair(ii, jj)].dest == NULL)
+    {
+      adjM[i][j] = 1 - adjM[i][j];
+      if (!directed)
+        adjM[j][i] = 1 - adjM[j][i];
+
+      prebuild(n, ii, jj);
+
+      adjM[i][j] = 1 - adjM[i][j];
+      if (!directed)
+        adjM[j][i] = 1 - adjM[j][i];
+    }
+  }
+
   permutation = t;
+  ipermutation = it;
 }
 
 string AutoGraph::runNauty()
@@ -212,23 +239,37 @@ void AutoGraph::createNeighbor(ANode* cur, int a, int b)
 
     n->label = s;
 
-    graphMap[s] = n;
+    graphMap[s] = n;;
   }
 
   Perm nperm = invert(tmp);
   Perm npermi = invert(nperm);
 
+  for (int i = 0; i < n_nodes; i++)
+    setPerm(tmp, getPerm(nperm, i), getPerm(tmp2, i));
+
   int ai = getPerm(nperm, a), bi = getPerm(nperm, b);
+
+  int ct = 0;
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < i; j++)
+      if (getPerm(nperm, i) < getPerm(nperm, j))
+        ct++;
+  stat[0] += ct <= 1;
+  ct = 0;
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < i; j++)
+      if (getPerm(npermi, i) < getPerm(npermi, j))
+        ct++;
+  stat[0] += ct <= 1;
+  stat[1] += 2;
 
   cur->nei[indexPair(a, b)] = {n, compress(nperm)};
   n->nei[indexPair(ai, bi)] = {cur, compress(npermi)};
 
-  for (int i = 0; i < n_nodes; i++)
-    setPerm(tmp, getPerm(nperm, i), getPerm(tmp2, i));
-
   compose(compress(nperm));
 
-  if (n_nodes <= 4)
+  if (n_nodes <= 10)
     return;
 
   string t = cur->label;

@@ -3,6 +3,9 @@
 #include "IsoGraph.h"
 #include "Isomorphism.h"
 #include <map>
+#include <vector>
+#include <list>
+#include <algorithm>
 
 #define getPerm(p,i) (((p) >> ((i) << 2)) & 15)
 #define setPerm(p,i,s) ((p) = (((p) & (~(15LL << ((i) << 2)))) | ((0LL + (s)) << ((i) << 2))))
