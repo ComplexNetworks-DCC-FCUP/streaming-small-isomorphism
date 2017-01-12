@@ -379,13 +379,6 @@ Perm AutoGraph::applyTranspositions(Perm p, int a1, int a2, int b1, int b2)
 
 Perm AutoGraph::compress(Perm perm)
 {
-/*  int fl = 1;
-  for (int i = 0; fl && i < n_nodes; i++)
-    if (getPerm(perm, i) != i)
-      fl = 0;
-
-  return fl ? 0: (perm << 1) + 1;*/
-
   Perm res = 0;
   int fl = 1;
   int fc = -1;
