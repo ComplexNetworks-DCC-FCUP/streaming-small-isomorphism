@@ -9,7 +9,7 @@ using namespace std;
 
 int main()
 {
-  bool d = true;
+  bool d = false;
   int n;
   scanf("%d", &n);
 
@@ -26,12 +26,12 @@ int main()
     string s1 = g1->canonicalLabel().c_str();
     string s2 = g2->canonicalLabel().c_str();
 
-    //printf("%s %s %d (%d, %d)\n", s1.c_str(), s2.c_str(), ord++, a, b);
+//    printf("%s %s %d (%d, %d)\n", s1.c_str(), s2.c_str(), ord++, a, b);
  
     assert(s1 == s2);
   }
 
-  printf("%lf, %d %d\n", 1.0 * g2->stat[0] / g2->stat[1], g2->stat[0], g2->stat[1]);
+  // printf("%lf, %d %d\n", 1.0 * g2->stat[0] / g2->stat[1], g2->stat[0], g2->stat[1]);
 
   return 0;
 }

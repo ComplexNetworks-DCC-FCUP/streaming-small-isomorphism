@@ -1,7 +1,7 @@
 #include "AutoGraph.h"
 #include <assert.h>
 
-AutoGraph::AutoGraph(bool _directed, int _n)
+AutoGraph::AutoGraph(bool _directed, int _n, bool _prebuild)
 {
   directed = _directed;
   n_nodes = _n;
@@ -40,7 +40,9 @@ AutoGraph::AutoGraph(bool _directed, int _n)
   graphMap[e0->label] = e0;
 
   cur = e0;
-  prebuild();
+
+  if (_prebuild)
+    prebuild();
 }
 
 AutoGraph::~AutoGraph()
@@ -213,12 +215,8 @@ void AutoGraph::createNeighbor(ANode* cur, int a, int b)
     graphMap[s] = n;
   }
 
-  Perm nperm = 0;
-  Perm npermi = 0;
-
-  for (int i = 0; i < n_nodes; i++)
-    setPerm(nperm, getPerm(tmp, i), i);
-  npermi = tmp;
+  Perm nperm = invert(tmp);
+  Perm npermi = invert(nperm);
 
   int ai = getPerm(nperm, a), bi = getPerm(nperm, b);
 
@@ -340,22 +338,66 @@ Perm AutoGraph::applyTranspositions(Perm p, int a1, int a2, int b1, int b2)
 
 Perm AutoGraph::compress(Perm perm)
 {
-  int fl = 1;
+/*  int fl = 1;
   for (int i = 0; fl && i < n_nodes; i++)
     if (getPerm(perm, i) != i)
       fl = 0;
 
-  return fl ? 0: (perm << 1) + 1;
+  return fl ? 0: (perm << 1) + 1;*/
+
+  Perm res = 0;
+  int fl = 1;
+  int fc = -1;
+  for (int i = 0; i < n_nodes; i++)
+    if (i != fc && getPerm(perm, i) != i)
+    {
+      if (fl == 2)
+      {
+        fl = 0;
+        break;
+      }
+
+      int a = i;
+      int b = getPerm(perm, i);
+
+      if (getPerm(perm, b) != a)
+      {
+        fl = 0;
+        break;
+      }
+
+      res = a + (b << 4);
+
+      fc = b;
+      fl++;
+    }
+
+  return fl ? (res << 2) + fl : (perm << 2);
 }
 
 void AutoGraph::compose(Perm perm)
 {
-  if (perm & 1)
+  if ((perm & 3) == 0)
   {
-    perm >>= 1;
+    perm >>= 2;
     Perm t = permutation;
     for (int i = 0; i < n_nodes; i++)
       setPerm(permutation, i, getPerm(perm, getPerm(t, i)));
+    ipermutation = invert(permutation);
+  }
+  else if ((perm & 3) == 2)
+  {
+    perm >>= 2;
+    int a = perm & 15;
+    int b = perm >> 4;
+    int ai = getPerm(ipermutation, a);
+    int bi = getPerm(ipermutation, b);
+
+    setPerm(permutation, bi, a);
+    setPerm(permutation, ai, b);
+
+    setPerm(ipermutation, a, bi);
+    setPerm(ipermutation, b, ai);
   }
 }
 
@@ -383,7 +425,22 @@ int AutoGraph::find(Perm p, int a)
   return -1;
 }
 
-int AutoGraph::indexPair(int a, int b)
+Perm AutoGraph::minimize(Perm p, Perm orbits)
+{
+  for (int i = 0; i < n_nodes; i++)
+  {
+    int b = find(p, i);
+    if (getPerm(p, i) != i && getPerm(orbits, i) == getPerm(orbits, b))
+    {
+      setPerm(p, b, getPerm(p, i));
+      setPerm(p, i, i);
+    }
+  }
+
+  return p;
+}
+
+inline int AutoGraph::indexPair(int a, int b)
 {
   if (!directed)
   {

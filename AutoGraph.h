@@ -11,7 +11,7 @@ typedef long long int Perm;
 class AutoGraph : public IsoGraph
 {
 public:
-  AutoGraph(bool _directed, int _n);
+  AutoGraph(bool _directed, int _n, bool _prebuild = false);
   ~AutoGraph();
 
   struct AEdge;
@@ -43,6 +43,7 @@ private:
   Perm invert(Perm p);
   Perm compress(Perm perm);
   int find(Perm p, int a);
+  Perm minimize(Perm p, Perm orbits);
 
   int indexPair(int a, int b);
   Perm applyTranspositions(Perm p, int a1, int a2, int b1, int b2);
