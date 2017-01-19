@@ -10,6 +10,7 @@ SRC =                   	\
 	NautyGraph.cpp		\
 	AutoGraph.cpp		\
 	Isomorphism.cpp		\
+	Timer.cpp		\
 	main.cpp
 
 OBJ =  ${SRC:.cpp=.o}

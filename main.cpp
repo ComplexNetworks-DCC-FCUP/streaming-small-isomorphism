@@ -6,16 +6,36 @@
 #include "IsoGraph.h"
 #include "NautyGraph.h"
 #include "AutoGraph.h"
+#include "Timer.h"
 
 using namespace std;
 
 int main()
 {
-  bool d = false;
-  int n;
-  scanf("%d", &n);
+  int n, sp, d;
+  scanf("%d %d %d", &n, &d, &sp);
 
-  IsoGraph* g1 = new NautyGraph(d, n);
+  Timer::start();
+  IsoGraph* g = new AutoGraph(d, n);
+
+  int a, b, ord = 0;
+  while (scanf("%d %d", &a, &b) != EOF)
+  {
+    a--, b--;
+
+    g->toggle(a, b);
+
+    string s = "";
+    if (ord % sp == 0)
+      s = g->canonicalLabel();
+
+    ord++;
+  }
+  Timer::stop();
+
+  printf("%0.4lf\n", Timer::elapsed());
+
+/*  IsoGraph* g1 = new NautyGraph(d, n);
   IsoGraph* g2 = new AutoGraph(d, n);
   IsoGraph* g3 = new AutoGraph(d, n, true);
 
@@ -44,7 +64,7 @@ int main()
   }
 
   printf("%lf, %d %d\n", 1.0 * g2->stat[0] / g2->stat[1], g2->stat[0], g2->stat[1]);
-  printf("%lf, %d %d\n", 1.0 * g3->stat[0] / g3->stat[1], g3->stat[0], g3->stat[1]);
+  printf("%lf, %d %d\n", 1.0 * g3->stat[0] / g3->stat[1], g3->stat[0], g3->stat[1]);*/
 
   return 0;
 }
