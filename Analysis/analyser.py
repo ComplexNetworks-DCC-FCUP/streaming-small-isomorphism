@@ -4,25 +4,40 @@ import numpy as np
 import matplotlib.pyplot as plt
 import subprocess, random, string
 
-'''exps = [
-  ("ER", False, 6),
-  ("ER", False, 7),
-  ("ER", False, 8),
-  ("PR", False, 6),
-  ("PR", False, 7),
-  ("PR", False, 8),
-  ("SP", False, 5),
-  ("SP", False, 6),
-  ("SP", False, 7),
-  ("ER", True, 4),
-  ("ER", True, 5),
-  ("PR", True, 4),
-  ("PR", True, 5)
-]'''
+undirMain = [("ER", False, 6, "ER6"),
+             ("ER", False, 7, "ER7"),
+             ("ER", False, 8, "ER8"),
+             ("PR", False, 6, "PR6"),
+             ("PR", False, 7, "PR7"),
+             ("PR", False, 8, "PR8")
+]
 
+dirMain = [("ER", True, 4, "dER-4"),
+           ("ER", True, 5, "dER-5"),
+           ("PR", True, 4, "dPR-4"),
+           ("PR", True, 5, "dPR-5")
+]
+
+undirSW = [("SW", False, 5, "SW5"),
+           ("SW", False, 6, "SW6"),
+           ("SW", False, 7, "SW7")
+]
+
+##############
+#
+# Control Panel
+#
+##############
+
+exps = undirSW
+fname = "test"
+mult = 2
+lo = 1000
+hi = 100000
+
+##############
 
 def run_command(rfile, cmd):
-  print cmd
   f = open(rfile, "wb")
   subprocess.call(cmd.split(), stdout=f)
   f.close()
@@ -45,7 +60,22 @@ def take_time(is_main, rfile):
 
   return ot
 
-exps = [("PR", False, 6)]
+params = {'axes.labelsize': 12,
+          'font.size': 12,
+          'legend.fontsize': 12,
+          'xtick.labelsize': 10,
+          'ytick.labelsize': 10,
+          'text.usetex': True}
+plt.rcParams.update(params)
+
+palette = [("#1abc9c", "#16a085"),
+           ("#2ecc71", "#27ae60"),
+           ("#3498db", "#2980b9"),
+           ("#9b59b6", "#8e44ad"),
+           ("#34495e", "#2c3e50"),
+           ("#e67e22", "#d35400"),
+           ("#e74c3c", "#c0392b")
+]
 
 gens = {
   'ER' : './er_gen.py %d %d %d',
@@ -53,10 +83,11 @@ gens = {
   'SW' : './sw_gen.py %d %d %d'
 }
 
-lo = 1000
-hi = 1000000
-
 if __name__ == "__main__":
+  fig = plt.figure(figsize=(16, 9), dpi=120)
+  ax = plt.subplot(1, 1, 1)
+  ordn = 1
+
   for exp in exps:
     run_base = []
     run_meth = []
@@ -69,24 +100,31 @@ if __name__ == "__main__":
 
     i = lo
     while i <= hi:
-      print "Go for %d" % i
-      run_command(rfile, command % (sz, direct, i))
+      tim = i + (random.randint(0, i * 0.1) - i * 0.05)
+      print "Go for %d" % tim
+      run_command(rfile, command % (sz, direct, tim))
 
-      times.append(i)
+      times.append(tim)
       run_base.append(take_time(False, rfile))
       run_meth.append(take_time(True, rfile))
 
-      i *= 5
+      i *= mult
 
     subprocess.call(["rm", rfile])
     subprocess.call(["rm", "out" + rfile])
 
-    plt.figure(figsize=(8, 6), dpi=80)
-    ax = plt.subplot(1, 1, 1)
+    colB, colO = palette[ordn % len(palette)]
+    ordn += 1
+    lab = exp[3]
+    plt.plot(times, run_base, color=colB, mec=colB, mfc='none', mew=2.0, marker='s', ls='--', label='{\\tt B-'+lab+'}')
+    plt.plot(times, run_meth, color=colO, mec=colO, mfc='none', mew=2.0, marker='o', label='{\\tt O-'+lab+'}')
 
-    plt.plot(times, run_base, color="blue", linewidth=1.0, linestyle="-", marker='s')
-    plt.plot(times, run_meth, color="green", linewidth=1.0, linestyle="-", marker='o')
-    ax.set_xscale('log')
+    
+  ax.set_xscale('log')
+  ax.legend(loc='center right')
+  ax.set_xlabel("Stream size ($|S|$)")
+  ax.set_ylabel("Runtime (seconds)")
+  ax.set_xlim([lo - lo * 0.2, hi + hi * 0.1])
 
-    # plt.savefig("exercice_2.png", dpi=72)
-    plt.show()
+  plt.savefig(fname + ".eps", dpi=120)
+  plt.show()
