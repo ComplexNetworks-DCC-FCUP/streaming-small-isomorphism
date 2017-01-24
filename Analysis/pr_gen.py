@@ -68,7 +68,7 @@ for i in range(m):
     # add
     probs = []
     for e in nedges:
-      p = 1 + pdef[e[0]] + pdeg[e[1]]
+      p = 1 + pdeg[e[0]] + pdeg[e[1]]
       probs.append(p)
 
     probs = normalize(probs)
