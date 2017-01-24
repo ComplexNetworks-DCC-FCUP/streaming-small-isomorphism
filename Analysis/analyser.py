@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import matplotlib
+matplotlib.use('Agg')
+
 import numpy as np
 import matplotlib.pyplot as plt
 import subprocess, random, string
@@ -29,11 +32,11 @@ undirSW = [("SW", False, 5, "SW5"),
 #
 ##############
 
-exps = undirSW
-fname = "test"
-mult = 2
-lo = 1000
-hi = 100000
+exps = undirMain
+fname = "undirMain"
+mult = 3
+lo = 10000
+hi = 10000000
 
 ##############
 
@@ -60,11 +63,11 @@ def take_time(is_main, rfile):
 
   return ot
 
-params = {'axes.labelsize': 12,
-          'font.size': 12,
-          'legend.fontsize': 12,
-          'xtick.labelsize': 10,
-          'ytick.labelsize': 10,
+params = {'axes.labelsize': 14,
+          'font.size': 14,
+          'legend.fontsize': 14,
+          'xtick.labelsize': 12,
+          'ytick.labelsize': 12,
           'text.usetex': True}
 plt.rcParams.update(params)
 
@@ -87,6 +90,10 @@ if __name__ == "__main__":
   fig = plt.figure(figsize=(16, 9), dpi=120)
   ax = plt.subplot(1, 1, 1)
   ordn = 1
+
+  base_list = []
+  meth_list = []
+  times_list = []
 
   for exp in exps:
     run_base = []
@@ -119,12 +126,30 @@ if __name__ == "__main__":
     plt.plot(times, run_base, color=colB, mec=colB, mfc='none', mew=2.0, marker='s', ls='--', label='{\\tt B-'+lab+'}')
     plt.plot(times, run_meth, color=colO, mec=colO, mfc='none', mew=2.0, marker='o', label='{\\tt O-'+lab+'}')
 
+    times_list.append(times)
+    base_list.append(run_base)
+    meth_list.append(run_meth)
     
   ax.set_xscale('log')
-  ax.legend(loc='center right')
+  ax.legend(loc='center left')
   ax.set_xlabel("Stream size ($|S|$)")
   ax.set_ylabel("Runtime (seconds)")
   ax.set_xlim([lo - lo * 0.2, hi + hi * 0.1])
 
   plt.savefig(fname + ".eps", dpi=120)
-  plt.show()
+#  plt.show()
+
+  f = open(fname + "_backup.txt", "wb")
+  for i in times_list:
+    for j in i:
+      print j,
+    print ""
+  for i in base_list:
+    for j in i:
+      print j,
+    print ""
+  for i in meth_list:
+    for j in i:
+      print j,
+    print ""
+  f.close()

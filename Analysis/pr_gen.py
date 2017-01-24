@@ -29,6 +29,9 @@ nedges = []
 mx = 2 * (n - 1)
 if d == 0:
   mx = n - 1
+pdeg = []
+for i in range(n):
+  pdeg.append(0)
 
 for i in range(n):
   for j in range(i + 1, n):
@@ -48,13 +51,15 @@ for i in range(m):
     # remove
     probs = []
     for e in edges:
-      p = 1 + 2 * mx - deg(e[0], edges) + deg(e[1], edges)
+      p = 1 + 2 * mx - pdeg[e[0]] + pdeg[e[1]]
       probs.append(p)
 
     probs = normalize(probs)
     sl = np.random.choice(range(len(edges)), 1, p = probs)[0]
     sl = edges[sl]
 
+    pdeg[sl[0]] -= 1
+    pdeg[sl[1]] -= 1
     edges.remove(sl)
     nedges.append(sl)
 
@@ -63,13 +68,15 @@ for i in range(m):
     # add
     probs = []
     for e in nedges:
-      p = 1 + deg(e[0], edges) + deg(e[1], edges)
+      p = 1 + pdef[e[0]] + pdeg[e[1]]
       probs.append(p)
 
     probs = normalize(probs)
     sl = np.random.choice(range(len(nedges)), 1, p = probs)[0]
     sl = nedges[sl]
 
+    pdeg[sl[0]] += 1
+    pdeg[sl[1]] += 1
     nedges.remove(sl)
     edges.append(sl)
 
