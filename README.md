@@ -49,3 +49,12 @@ following classes:
    directed or not, `n` is the number of vertices and `prebuild`
    indicated if the automaton should be prebuilt. This is the
    implementation of our method as described in the paper;
+
+## Author Information
+
+This software was created by researchers of the Faculty of Sciences of
+the University or Porto, from the research group
+[CRACS](http://cracs.fc.up.pt/).
+
+At the time of publication, Pedro Paredes is a second year Computer
+Science Master's student advised by professor Pedro Ribeiro.
