@@ -27,7 +27,11 @@
 *.exe
 *.out
 *.app
-ISO
+ISO*
+TSUB
 
 # Emacs files
 *~
+
+# Internal directories
+Data/*

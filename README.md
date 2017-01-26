@@ -21,7 +21,7 @@ the original paper for more information about this.
 
 This software is meant to be used as an API, which will be detailed
 bellow. We include an example application of this method in a graph
-mining tool, which is available in the `Examples` directory.
+mining method, which is available in the `Examples` directory.
 
 In the `Analysis` directory we include the code used to perform the
 experimental analysis reported in the original paper.
@@ -45,6 +45,9 @@ following functions:
    
  * `string canonicalLabel()`, returns a string that represents the
    canonical label of the graph currently represented by the object;
+
+ * `void cleanup()`, resets the automaton state to point to node 0
+   (the node that represents the empty graph);
    
 The available implementations of this virtual class are the two
 following classes:
