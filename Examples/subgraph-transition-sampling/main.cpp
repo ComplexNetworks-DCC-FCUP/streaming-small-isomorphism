@@ -26,6 +26,7 @@ void displayHelp()
         "-d : Directed graph (Default undirected)\n"
         "-m <Integer> : Base method (0 - naive [default], 1 - automaton)\n"
         "-t <Integer> : Number of samples (default 1,000,000)\n"
+        "-f <Integer> : Fix the randomness seed (default is time based)\n"
         "--------------------------------------\n");
 }
 
@@ -174,6 +175,7 @@ void createTransitionSample(Graph* G, IsoGraph* iso, int n, bool d, int iteratio
 int main(int argc, char **argv)
 {
   int n = -1, m = 0, iterations = 1000000;
+  int seed = time(NULL);
   bool d = false;
 
   for (int i = 1; i < argc; i++)
@@ -227,16 +229,32 @@ int main(int argc, char **argv)
 	j++;
       }
     }
+    else if (argv[i][1] == 'f')
+    {
+      i++;
+
+      seed = argv[i][0] - '0';
+      int j = 1;
+      while (argv[i][j] != '\0')
+      {
+	seed *= 10;
+	seed += argv[i][j] - '0';
+	j++;
+      }
+    }
     else
       printf("Option '%s' not recognized\n", argv[i]);
   }
 
-  IsoGraph* iso;
+  srand(seed);
 
+  IsoGraph* iso;
   Graph* G = new Graph();
-  readGraph(G, d);
 
   Timer::start();
+
+  readGraph(G, d);
+
   if (m == 0)
     iso = new NautyGraph(d, n);
   else
