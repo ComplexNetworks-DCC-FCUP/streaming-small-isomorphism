@@ -54,6 +54,13 @@ string NautyGraph::canonicalLabel()
   return sv;
 }
 
+void NautyGraph::cleanup()
+{
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < n_nodes; j++)
+      adjM[i][j] = 0;
+}
+
 void NautyGraph::addEdge(int a, int b)
 {
   adjM[a][b] = true;

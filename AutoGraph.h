@@ -35,6 +35,8 @@ public:
   void toggle(int a, int b);
   bool isConnected(int a, int b);
   string canonicalLabel();
+  void cleanup();
+
   void prebuild();
 
 private:
@@ -66,6 +68,6 @@ private:
   int* tmpNauty, *tmp2Nauty;
   char* stmp, *stmp2;
   bool** adjM;
-  ANode* cur;
+  ANode* cur, *zeroNode;
   Isomorphism* iso;
 };

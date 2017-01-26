@@ -10,6 +10,7 @@ public:
   virtual void toggle(int a, int b) = 0;
   virtual bool isConnected(int a, int b) = 0;
   virtual string canonicalLabel() = 0;
+  virtual void cleanup() = 0;
 
   int* stat;
 

@@ -7,7 +7,17 @@ following paper:
 
 It performs a streaming graph canonisation, meaning it canonises a set
 of graphs in a stream of edge change operations (for more information
-check the paper).
+check the paper). The algorithm provided, as described in the paper,
+is based on a graph isomorphism automaton.
+
+In the main directory there is a `main.cpp` and a `Makefile` that
+provide a very simple usage of the automaton method by a simple
+command line application that accepts an header with four integers:
+`n`, the number of vertices; `d`, the direction of the graph (0 -
+undirected, 1 - directed); `tp`, the used method (0 - baseline naive
+method, 1 - efficient automaton method); `pre`, whether the automaton
+should be pre-built or not (0 - don't pre-build, 1 - pre-build), check
+the original paper for more information about this.
 
 This software is meant to be used as an API, which will be detailed
 bellow. We include an example application of this method in a graph

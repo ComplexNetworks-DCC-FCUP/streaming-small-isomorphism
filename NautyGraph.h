@@ -12,6 +12,7 @@ public:
   void toggle(int a, int b);
   bool isConnected(int a, int b);
   string canonicalLabel();
+  void cleanup();
 
 private:
   void addEdge(int a, int b);

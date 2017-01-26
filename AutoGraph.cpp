@@ -44,6 +44,7 @@ AutoGraph::AutoGraph(bool _directed, int _n, bool _prebuild)
   graphMap[e0->label] = e0;
 
   cur = e0;
+  zeroNode = e0;
 
   if (_prebuild)
     prebuild();
@@ -80,6 +81,16 @@ bool AutoGraph::isConnected(int a, int b)
 string AutoGraph::canonicalLabel()
 {
   return cur->label;
+}
+
+void AutoGraph::cleanup()
+{
+  permutation = ipermutation = pers[n_nodes];
+  cur = zeroNode;
+
+  for (int i = 0; i < n_nodes; i++)
+    for (int j = 0; j < n_nodes; j++)
+      adjM[i][j] = 0;
 }
 
 void AutoGraph::prebuild()
