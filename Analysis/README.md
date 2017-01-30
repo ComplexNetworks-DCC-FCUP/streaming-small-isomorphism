@@ -21,3 +21,7 @@ The analyser file, `analyser.py`, assumes the existence of two
 binaries, `ISO_b`and `ISO_m`, that run both versions of the code (the
 naive and automaton method, respectively) and output the elapsed
 time. They must accept as input the format returned by the generators.
+
+To generate these, there is a `Makefile` in this directory that
+creates the necessary binaries with the correct names, as used by the
+analysis present in the paper.
