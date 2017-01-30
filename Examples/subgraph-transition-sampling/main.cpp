@@ -108,6 +108,9 @@ vector<int> sampleSubgraph(Graph* G, int n)
           EL.push_back(nei[j]);
     }
 
+    if (EL.size() == 0)
+      return sampleSubgraph(G, n);
+
     ind = rand() % EL.size();
     subgraph.push_back(EL[ind]);
   }
