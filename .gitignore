@@ -35,3 +35,5 @@ TSUB
 
 # Internal directories
 Data/*
+*.txt
+*.eps
