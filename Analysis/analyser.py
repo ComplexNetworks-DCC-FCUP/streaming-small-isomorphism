@@ -13,12 +13,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import subprocess, random, string
 
-undirMain = [("ER", False, 6, "ER6"),
-             ("ER", False, 7, "ER7"),
-             ("ER", False, 8, "ER8"),
-             ("PR", False, 6, "PR6"),
-             ("PR", False, 7, "PR7"),
-             ("PR", False, 8, "PR8")
+undirMain = [("ER", False, 6, "ER-6"),
+             ("ER", False, 7, "ER-7"),
+             ("ER", False, 8, "ER-8"),
+             ("PR", False, 6, "PR-6"),
+             ("PR", False, 7, "PR-7"),
+             ("PR", False, 8, "PR-8")
 ]
 
 dirMain = [("ER", True, 4, "dER-4"),
@@ -27,9 +27,17 @@ dirMain = [("ER", True, 4, "dER-4"),
            ("PR", True, 5, "dPR-5")
 ]
 
-undirSW = [("SW", False, 5, "SW5"),
-           ("SW", False, 6, "SW6"),
-           ("SW", False, 7, "SW7")
+undirSW = [("SW", False, 5, "SW-5"),
+           ("SW", False, 6, "SW-6"),
+           ("SW", False, 7, "SW-7")
+]
+
+stepMain = [("ER2", False, 1, "ERs-1"),
+            ("ER2", False, 2, "ERs-2"),
+            ("ER2", False, 3, "ERs-3"),
+            ("ER2", False, 4, "ERs-4"),
+            ("ER2", False, 5, "ERs-5"),
+            ("ER2", False, 6, "ERs-6")
 ]
 
 ##############
@@ -38,8 +46,8 @@ undirSW = [("SW", False, 5, "SW5"),
 #
 ##############
 
-exps = undirMain
-fname = "undirMain"
+exps = stepMain
+fname = "stepMain"
 mult = 3
 lo = 10000
 hi = 10000000
@@ -69,11 +77,11 @@ def take_time(is_main, rfile):
 
   return ot
 
-params = {'axes.labelsize': 14,
-          'font.size': 14,
-          'legend.fontsize': 14,
-          'xtick.labelsize': 12,
-          'ytick.labelsize': 12,
+params = {'axes.labelsize': 24,
+          'font.size': 20,
+          'legend.fontsize': 20,
+          'xtick.labelsize': 16,
+          'ytick.labelsize': 16,
           'text.usetex': True}
 plt.rcParams.update(params)
 
@@ -87,9 +95,10 @@ palette = [("#1abc9c", "#16a085"),
 ]
 
 gens = {
-  'ER' : './er_gen.py %d %d %d',
-  'PR' : './pr_gen.py %d %d %d',
-  'SW' : './sw_gen.py %d %d %d'
+  'ER'  : './er_gen.py %d %d %d',
+  'PR'  : './pr_gen.py %d %d %d',
+  'SW'  : './sw_gen.py %d %d %d',
+  'ER2' : './ers_gen.py %d %d %d'
 }
 
 if __name__ == "__main__":
@@ -148,14 +157,14 @@ if __name__ == "__main__":
   f = open(fname + "_backup.txt", "wb")
   for i in times_list:
     for j in i:
-      print j,
-    print ""
+      print >>f, j,
+    print >>f, ""
   for i in base_list:
     for j in i:
-      print j,
-    print ""
+      print >>f, j,
+    print >>f, ""
   for i in meth_list:
     for j in i:
-      print j,
-    print ""
+      print >>f, j,
+    print >>f, ""
   f.close()
