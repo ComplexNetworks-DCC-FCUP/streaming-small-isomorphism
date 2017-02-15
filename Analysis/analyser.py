@@ -13,31 +13,38 @@ import numpy as np
 import matplotlib.pyplot as plt
 import subprocess, random, string
 
-undirMain = [("ER", False, 6, "ER-6"),
-             ("ER", False, 7, "ER-7"),
-             ("ER", False, 8, "ER-8"),
-             ("PR", False, 6, "PR-6"),
-             ("PR", False, 7, "PR-7"),
-             ("PR", False, 8, "PR-8")
+undirMain = [("ER", False, 6, "ER-6", False),
+             ("ER", False, 7, "ER-7", False),
+             ("ER", False, 8, "ER-8", False),
+             ("PR", False, 6, "PR-6", False),
+             ("PR", False, 7, "PR-7", False),
+             ("PR", False, 8, "PR-8", False)
 ]
 
-dirMain = [("ER", True, 4, "dER-4"),
-           ("ER", True, 5, "dER-5"),
-           ("PR", True, 4, "dPR-4"),
-           ("PR", True, 5, "dPR-5")
+dirMain = [("ER", True, 4, "dER-4", False),
+           ("ER", True, 5, "dER-5", False),
+           ("PR", True, 4, "dPR-4", False),
+           ("PR", True, 5, "dPR-5", False)
 ]
 
-undirSW = [("SW", False, 5, "SW-5"),
-           ("SW", False, 6, "SW-6"),
-           ("SW", False, 7, "SW-7")
+undirSW = [("SW", False, 5, "SW-5", False),
+           ("SW", False, 6, "SW-6", False),
+           ("SW", False, 7, "SW-7", False)
 ]
 
-stepMain = [("ER2", False, 1, "ERs-1"),
-            ("ER2", False, 2, "ERs-2"),
-            ("ER2", False, 3, "ERs-3"),
-            ("ER2", False, 4, "ERs-4"),
-            ("ER2", False, 5, "ERs-5"),
-            ("ER2", False, 6, "ERs-6")
+stepMain = [("ER2", False, 1, "ERs-1", False),
+            ("ER2", False, 2, "ERs-2", False),
+            ("ER2", False, 3, "ERs-3", False),
+            ("ER2", False, 4, "ERs-4", False),
+            ("ER2", False, 5, "ERs-5", False),
+            ("ER2", False, 6, "ERs-6", False)
+]
+
+preMain = [("PR", False, 6, "PR-6", True),
+           ("PR", False, 7, "PR-7", True),
+           ("PR", False, 8, "PR-8", True),
+           ("PR", True, 4, "dPR-4", True),
+           ("PR", True, 5, "dPR-5", True)
 ]
 
 ##############
@@ -46,11 +53,13 @@ stepMain = [("ER2", False, 1, "ERs-1"),
 #
 ##############
 
-exps = stepMain
-fname = "stepMain"
+exps = preMain
+fname = "preMain"
 mult = 3
-lo = 10000
-hi = 10000000
+#lo = 10000
+#hi = 10000000
+lo = 100
+hi = 1000
 
 ##############
 
@@ -59,9 +68,12 @@ def run_command(rfile, cmd):
   subprocess.call(cmd.split(), stdout=f)
   f.close()
 
-def take_time(is_main, rfile):
+def take_time(is_main, is_pre, rfile):
   if is_main:
-    cmd = "./ISO_m"
+    if is_pre:
+      cmd = "./ISO_p"
+    else:
+      cmd = "./ISO_m"
   else:
     cmd = "./ISO_b"
 
@@ -115,6 +127,7 @@ if __name__ == "__main__":
     run_meth = []
     times = []
 
+    pre = exp[4]
     command = gens[exp[0]]
     direct = bool(exp[1])
     sz = exp[2]
@@ -127,8 +140,13 @@ if __name__ == "__main__":
       run_command(rfile, command % (sz, direct, tim))
 
       times.append(tim)
-      run_base.append(take_time(False, rfile))
-      run_meth.append(take_time(True, rfile))
+
+      if not(pre):
+        run_base.append(take_time(False, False, rfile))
+        run_meth.append(take_time(True, False, rfile))
+      else:
+        run_base.append(take_time(True, False,  rfile))
+        run_meth.append(take_time(True, True, rfile))
 
       i *= mult
 
@@ -138,8 +156,13 @@ if __name__ == "__main__":
     colB, colO = palette[ordn % len(palette)]
     ordn += 1
     lab = exp[3]
-    plt.plot(times, run_base, color=colB, mec=colB, mfc='none', mew=2.0, marker='s', ls='--', label='{\\tt B-'+lab+'}')
-    plt.plot(times, run_meth, color=colO, mec=colO, mfc='none', mew=2.0, marker='o', label='{\\tt O-'+lab+'}')
+
+    if not(pre):
+      plt.plot(times, run_base, color=colB, mec=colB, mfc='none', mew=2.0, marker='s', ls='--', label='{\\tt B-'+lab+'}')
+      plt.plot(times, run_meth, color=colO, mec=colO, mfc='none', mew=2.0, marker='o', label='{\\tt O-'+lab+'}')
+    else:
+      plt.plot(times, run_base, color=colB, mec=colB, mfc='none', mew=2.0, marker='s', ls='--', label='{\\tt F-'+lab+'}')
+      plt.plot(times, run_meth, color=colO, mec=colO, mfc='none', mew=2.0, marker='o', label='{\\tt P-'+lab+'}')
 
     times_list.append(times)
     base_list.append(run_base)
