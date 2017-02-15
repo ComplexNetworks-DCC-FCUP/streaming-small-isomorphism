@@ -40,8 +40,7 @@ stepMain = [("ER2", False, 1, "ERs-1", False),
             ("ER2", False, 6, "ERs-6", False)
 ]
 
-preMain = [("PR", False, 6, "PR-6", True),
-           ("PR", False, 7, "PR-7", True),
+preMain = [("PR", False, 7, "PR-7", True),
            ("PR", False, 8, "PR-8", True),
            ("PR", True, 4, "dPR-4", True),
            ("PR", True, 5, "dPR-5", True)
@@ -56,8 +55,8 @@ preMain = [("PR", False, 6, "PR-6", True),
 exps = preMain
 fname = "preMain"
 mult = 3
-lo = 10000
-hi = 10000000
+lo = 100000
+hi = 100000000
 
 ##############
 
