@@ -56,10 +56,8 @@ preMain = [("PR", False, 6, "PR-6", True),
 exps = preMain
 fname = "preMain"
 mult = 3
-#lo = 10000
-#hi = 10000000
-lo = 100
-hi = 1000
+lo = 10000
+hi = 10000000
 
 ##############
 
